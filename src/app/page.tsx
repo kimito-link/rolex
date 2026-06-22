@@ -4,6 +4,7 @@
 // 下部タブで「ホーム / コピー / 履歴 / 設定」を切り替える単一ページ構成。
 // すべての状態は useAppState（localStorageベース）で管理する。
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
 import { useAppState } from "@/lib/useAppState";
 import { findActiveDuplicate } from "@/lib/duplicate";
@@ -17,6 +18,7 @@ import { HistoryPanel } from "@/components/HistoryPanel";
 import { GmailHelpPanel } from "@/components/GmailHelpPanel";
 import { ApplicationEditor } from "@/components/ApplicationEditor";
 import { SettingsPanel } from "@/components/SettingsPanel";
+import { Mascot } from "@/components/Mascot";
 
 type Tab = "home" | "copy" | "history" | "settings";
 
@@ -72,17 +74,48 @@ export default function Page() {
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col">
       {/* ヘッダー */}
-      <header className="sticky top-0 z-10 bg-rolex-green px-4 py-3 text-white shadow-sm">
-        <h1 className="text-base font-bold">ロレックス応募補助アプリ</h1>
-        <p className="text-[11px] opacity-90">
-          表参道 事前来店予約 入力・履歴補助
-        </p>
+      <header className="sticky top-0 z-10 flex items-center gap-2 bg-rolex-green px-4 py-3 text-white shadow-sm">
+        <Image
+          src="/brand/logo-white.png"
+          alt="kimito-link"
+          width={36}
+          height={36}
+          className="flex-none select-none"
+          priority
+        />
+        <div>
+          <h1 className="text-base font-bold leading-tight">
+            ロレックス応募補助アプリ
+          </h1>
+          <p className="text-[11px] opacity-90">
+            表参道 事前来店予約 入力・履歴補助
+          </p>
+        </div>
       </header>
 
       {/* 本文 */}
       <main className="flex-1 space-y-4 px-4 py-4 pb-24">
         {tab === "home" && (
           <>
+            {/* 案内役リンクちゃんの一言（状態でセリフが変わる） */}
+            {hasActiveDuplicate ? (
+              <Mascot id="konta" expr="warn" tone="warn">
+                すでに応募済みみたい！表参道は期間内1回のみのことが多いから、重複応募にならないよう気をつけてね。
+              </Mascot>
+            ) : latest?.status === "応募済み" ? (
+              <Mascot id="tanunee" expr="smile" tone="happy">
+                応募おつかれさま！結果が来たら履歴のステータスを更新してね。
+              </Mascot>
+            ) : !latest ? (
+              <Mascot id="link" expr="smile">
+                ようこそ！まずはGmailで予約メールを開いてURLを登録しよう。手順はこの下のカードから見られるよ。
+              </Mascot>
+            ) : (
+              <Mascot id="link" expr="normal">
+                準備はこのカードから。コピー項目を用意しておくと入力がスムーズだよ。
+              </Mascot>
+            )}
+
             <StoreCard
               latest={latest}
               hasActiveDuplicate={hasActiveDuplicate}
@@ -104,6 +137,11 @@ export default function Page() {
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-stone-300" />
+                  <div className="mb-3">
+                    <Mascot id="link" expr="normal">
+                      この順番でやればだいじょうぶ。reCAPTCHAとSMS認証、最後の送信はあなたの手で操作してね。
+                    </Mascot>
+                  </div>
                   <StepsPanel />
                   <button
                     type="button"
@@ -120,6 +158,9 @@ export default function Page() {
 
         {tab === "copy" && (
           <>
+            <Mascot id="link" expr="normal">
+              入力欄をタップしたら、ここのボタンでコピーして貼り付けてね。下の「プロフィール」を埋めると使えるようになるよ。
+            </Mascot>
             <CopyPanel profile={state.profile} />
             <ProfilePanel
               profile={state.profile}
@@ -129,18 +170,28 @@ export default function Page() {
         )}
 
         {tab === "history" && (
-          <HistoryPanel
-            applications={state.applications}
-            onAdd={handleAddNew}
-            onEdit={(app) => setEditing(app)}
-          />
+          <>
+            <Mascot id="tanunee" expr="normal">
+              応募の記録はここで管理。ステータスを「応募済み」「当選」などに更新しておくと後で分かりやすいよ。
+            </Mascot>
+            <HistoryPanel
+              applications={state.applications}
+              onAdd={handleAddNew}
+              onEdit={(app) => setEditing(app)}
+            />
+          </>
         )}
 
         {tab === "settings" && (
-          <SettingsPanel
-            count={state.applications.length}
-            onClearAll={state.clearAll}
-          />
+          <>
+            <Mascot id="konta" expr="warn" tone="warn">
+              大事な確認だよ。このアプリは入力補助だけ。応募・認証・送信は必ずあなた自身の手で、1回だけ正規に行ってね。
+            </Mascot>
+            <SettingsPanel
+              count={state.applications.length}
+              onClearAll={state.clearAll}
+            />
+          </>
         )}
       </main>
 
