@@ -39,7 +39,13 @@ const QUICK_STEPS: { emoji: string; title: string; body: string }[] = [
   },
 ];
 
-export function LandingHero({ onStart }: { onStart: () => void }) {
+export function LandingHero({
+  onStart,
+  onRegisterProfile,
+}: {
+  onStart: () => void;
+  onRegisterProfile: () => void;
+}) {
   return (
     <section className="space-y-4">
       {/* つかみ：かっこいいよね？ */}
@@ -121,6 +127,24 @@ export function LandingHero({ onStart }: { onStart: () => void }) {
           ))}
         </ol>
       </div>
+
+      {/* 事前準備への導線：先に自分の情報を登録しておくと一括入力がラク */}
+      <button
+        type="button"
+        onClick={onRegisterProfile}
+        className="flex w-full items-center gap-3 rounded-2xl border border-rolex-gold/50 bg-amber-50 px-4 py-3 text-left transition active:bg-amber-100"
+      >
+        <span className="text-xl">⚡</span>
+        <span className="flex-1">
+          <span className="block text-sm font-bold text-stone-800">
+            まず自分の情報を登録しておこう
+          </span>
+          <span className="block text-xs text-stone-500">
+            一度入れておけば、応募時にボタンで一括入力・コピーできるよ
+          </span>
+        </span>
+        <span className="text-rolex-gold">→</span>
+      </button>
 
       {/* CTA：はじめる */}
       <button

@@ -20,11 +20,12 @@ import { ApplicationEditor } from "@/components/ApplicationEditor";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { Mascot } from "@/components/Mascot";
 import { LandingHero } from "@/components/LandingHero";
+import { AutofillTip } from "@/components/AutofillTip";
 
 type Tab = "home" | "copy" | "history" | "settings";
 
 // 画面下に表示するバージョン。更新を反映したら上げる（最新版か判別する目印）。
-const APP_VERSION = "v1.1.0";
+const APP_VERSION = "v1.2.0";
 
 export default function Page() {
   const state = useAppState();
@@ -107,7 +108,12 @@ export default function Page() {
         {tab === "home" && (
           <>
             {/* 初めての人向けの紹介LP（応募記録がまだ無いときに表示） */}
-            {!latest && <LandingHero onStart={scrollToTool} />}
+            {!latest && (
+              <LandingHero
+                onStart={scrollToTool}
+                onRegisterProfile={() => setTab("copy")}
+              />
+            )}
 
             {/* ここから下が実際のツール部分（LPの「はじめる」のスクロール先） */}
             <div ref={toolRef} className="scroll-mt-16 space-y-4">
@@ -174,9 +180,10 @@ export default function Page() {
 
         {tab === "copy" && (
           <>
-            <Mascot id="link" expr="normal">
-              入力欄をタップしたら、ここのボタンでコピーして貼り付けてね。下の「プロフィール」を埋めると使えるようになるよ。
+            <Mascot id="link" expr="smile">
+              先にプロフィールを入れておけば、あとはボタンを上から順にポンポン押すだけ！iPhoneの自動入力を使えば一括入力もできるよ。
             </Mascot>
+            <AutofillTip />
             <CopyPanel profile={state.profile} />
             <ProfilePanel
               profile={state.profile}
