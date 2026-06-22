@@ -44,6 +44,23 @@ export function CopyPanel({ profile }: { profile: Profile }) {
   const anyEmpty = filledCount < items.length;
   const doneCount = done.size;
 
+  // プロフィールが1つも入っていないときは、空のコピー欄を並べても無意味なので
+  // 「まず下のプロフィールを入力してね」という案内だけを表示する。
+  if (filledCount === 0) {
+    return (
+      <Card>
+        <h2 className="mb-1 text-lg font-bold text-stone-800">コピー項目</h2>
+        <p className="rounded-xl bg-amber-50 px-3 py-4 text-center text-sm leading-relaxed text-amber-800">
+          まだプロフィールが未入力です。
+          <br />
+          下の「プロフィール」に自分の情報を入れると、
+          <br />
+          ここからワンタップでコピーできるようになります。
+        </p>
+      </Card>
+    );
+  }
+
   async function handleCopy(item: CopyItem, index: number) {
     const ok = await copy(item.value, item.key);
     if (ok) {

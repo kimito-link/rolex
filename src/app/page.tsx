@@ -25,7 +25,7 @@ import { AutofillTip } from "@/components/AutofillTip";
 type Tab = "home" | "copy" | "history" | "settings";
 
 // 画面下に表示するバージョン。更新を反映したら上げる（最新版か判別する目印）。
-const APP_VERSION = "v1.2.0";
+const APP_VERSION = "v1.2.1";
 
 export default function Page() {
   const state = useAppState();
