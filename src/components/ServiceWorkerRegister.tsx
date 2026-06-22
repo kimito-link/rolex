@@ -1,26 +1,33 @@
 "use client";
 
-// サービスワーカーを登録するだけのコンポーネント。
-// 本番(production)でのみ登録し、開発中はキャッシュ事故を避けて登録しない。
+// 旧バージョンで登録された Service Worker を確実に取り除くためのコンポーネント。
+//
+// 以前は SW でアプリシェルをキャッシュしていたが、「更新が反映されない／
+// シークレットモードでしか最新が見えない」不具合の原因になっていた。
+// このアプリはオンライン前提なので SW は廃止し、ここでは
+// 既存の登録を解除し、残ったキャッシュを削除する。
 
 import { useEffect } from "react";
 
 export function ServiceWorkerRegister() {
   useEffect(() => {
-    if (
-      typeof window === "undefined" ||
-      !("serviceWorker" in navigator) ||
-      process.env.NODE_ENV !== "production"
-    ) {
-      return;
+    if (typeof window === "undefined") return;
+
+    // 既存の Service Worker をすべて登録解除する
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then((regs) => regs.forEach((r) => r.unregister()))
+        .catch(() => {});
     }
-    const onLoad = () => {
-      navigator.serviceWorker.register("/sw.js").catch(() => {
-        // 登録失敗してもアプリ自体は動くので握りつぶす
-      });
-    };
-    window.addEventListener("load", onLoad);
-    return () => window.removeEventListener("load", onLoad);
+
+    // 残っているキャッシュをすべて削除する
+    if ("caches" in window) {
+      caches
+        .keys()
+        .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+        .catch(() => {});
+    }
   }, []);
 
   return null;

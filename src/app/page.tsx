@@ -25,7 +25,7 @@ import { AutofillTip } from "@/components/AutofillTip";
 type Tab = "home" | "copy" | "history" | "settings";
 
 // 画面下に表示するバージョン。更新を反映したら上げる（最新版か判別する目印）。
-const APP_VERSION = "v1.2.1";
+const APP_VERSION = "v1.3.0";
 
 export default function Page() {
   const state = useAppState();
@@ -86,11 +86,11 @@ export default function Page() {
       {/* ヘッダー */}
       <header className="sticky top-0 z-10 flex items-center gap-2 bg-rolex-green px-4 py-3 text-white shadow-sm">
         <Image
-          src="/brand/logo-white.png"
+          src="/brand/logo-orange.png"
           alt="kimito-link"
-          width={36}
-          height={36}
-          className="flex-none select-none"
+          width={40}
+          height={40}
+          className="flex-none select-none rounded-full bg-white/95 p-1"
           priority
         />
         <div>

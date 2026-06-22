@@ -52,15 +52,17 @@ export function LandingHero({
       <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-rolex-green to-rolex-greenDark p-5 text-white shadow-md">
         {/* ブランドロゴ（kimito-link） */}
         <div className="mb-4 flex items-center gap-2">
-          <Image
-            src="/brand/logo-white.png"
-            alt="kimito-link"
-            width={88}
-            height={88}
-            priority
-            className="h-11 w-auto select-none"
-          />
-          <span className="text-sm font-semibold tracking-wide text-white/90">
+          <span className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-white/95 shadow-sm">
+            <Image
+              src="/brand/logo-orange.png"
+              alt="kimito-link"
+              width={80}
+              height={80}
+              priority
+              className="h-9 w-9 select-none object-contain"
+            />
+          </span>
+          <span className="text-base font-bold tracking-wide text-white">
             kimito-link
           </span>
         </div>
