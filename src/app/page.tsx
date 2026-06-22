@@ -23,6 +23,9 @@ import { LandingHero } from "@/components/LandingHero";
 
 type Tab = "home" | "copy" | "history" | "settings";
 
+// 画面下に表示するバージョン。更新を反映したら上げる（最新版か判別する目印）。
+const APP_VERSION = "v1.1.0";
+
 export default function Page() {
   const state = useAppState();
   const [tab, setTab] = useState<Tab>("home");
@@ -206,6 +209,11 @@ export default function Page() {
             />
           </>
         )}
+
+        {/* バージョン表示（最新版を見ているか確認できるように） */}
+        <p className="pt-2 text-center text-[10px] text-stone-400">
+          kimito-link ・ {APP_VERSION}
+        </p>
       </main>
 
       {/* 応募編集シート */}
