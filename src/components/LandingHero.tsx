@@ -7,6 +7,7 @@
 //
 // あくまで本人が正規に1回応募するのを助けるツールである点をブレさせない。
 
+import Image from "next/image";
 import { Mascot, CharacterFace } from "./Mascot";
 
 /** LPの中で使う、初見向けのざっくり手順（5ステップ） */
@@ -43,6 +44,21 @@ export function LandingHero({ onStart }: { onStart: () => void }) {
     <section className="space-y-4">
       {/* つかみ：かっこいいよね？ */}
       <div className="overflow-hidden rounded-3xl bg-gradient-to-br from-rolex-green to-rolex-greenDark p-5 text-white shadow-md">
+        {/* ブランドロゴ（kimito-link） */}
+        <div className="mb-4 flex items-center gap-2">
+          <Image
+            src="/brand/logo-white.png"
+            alt="kimito-link"
+            width={88}
+            height={88}
+            priority
+            className="h-11 w-auto select-none"
+          />
+          <span className="text-sm font-semibold tracking-wide text-white/90">
+            kimito-link
+          </span>
+        </div>
+
         <div className="flex items-center gap-3">
           <CharacterFace id="link" expr="smile" size={72} priority />
           <div>
