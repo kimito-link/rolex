@@ -5,7 +5,7 @@
 // すべての状態は useAppState（localStorageベース）で管理する。
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useAppState } from "@/lib/useAppState";
 import { findActiveDuplicate } from "@/lib/duplicate";
 import { Application } from "@/lib/types";
@@ -19,6 +19,7 @@ import { GmailHelpPanel } from "@/components/GmailHelpPanel";
 import { ApplicationEditor } from "@/components/ApplicationEditor";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { Mascot } from "@/components/Mascot";
+import { LandingHero } from "@/components/LandingHero";
 
 type Tab = "home" | "copy" | "history" | "settings";
 
@@ -27,6 +28,11 @@ export default function Page() {
   const [tab, setTab] = useState<Tab>("home");
   const [showSteps, setShowSteps] = useState(false);
   const [editing, setEditing] = useState<Application | null>(null);
+
+  // LPの「はじめる」からツール部分へスクロールするための参照
+  const toolRef = useRef<HTMLDivElement | null>(null);
+  const scrollToTool = () =>
+    toolRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   // 最新の応募（作成日時が一番新しいもの）
   const latest = state.applications[0] ?? null;
@@ -97,36 +103,43 @@ export default function Page() {
       <main className="flex-1 space-y-4 px-4 py-4 pb-24">
         {tab === "home" && (
           <>
-            {/* 案内役リンクちゃんの一言（状態でセリフが変わる） */}
-            {hasActiveDuplicate ? (
-              <Mascot id="konta" expr="warn" tone="warn">
-                すでに応募済みみたい！表参道は期間内1回のみのことが多いから、重複応募にならないよう気をつけてね。
-              </Mascot>
-            ) : latest?.status === "応募済み" ? (
-              <Mascot id="tanunee" expr="smile" tone="happy">
-                応募おつかれさま！結果が来たら履歴のステータスを更新してね。
-              </Mascot>
-            ) : !latest ? (
-              <Mascot id="link" expr="smile">
-                ようこそ！まずはGmailで予約メールを開いてURLを登録しよう。手順はこの下のカードから見られるよ。
-              </Mascot>
-            ) : (
-              <Mascot id="link" expr="normal">
-                準備はこのカードから。コピー項目を用意しておくと入力がスムーズだよ。
-              </Mascot>
-            )}
+            {/* 初めての人向けの紹介LP（応募記録がまだ無いときに表示） */}
+            {!latest && <LandingHero onStart={scrollToTool} />}
 
-            <StoreCard
-              latest={latest}
-              hasActiveDuplicate={hasActiveDuplicate}
-              onOpenReservation={openReservation}
-              onShowSteps={() => setShowSteps(true)}
-              onShowCopy={() => setTab("copy")}
-              onMarkApplied={handleMarkApplied}
-              onEditLatest={() => latest && setEditing(latest)}
-              onAddNew={handleAddNew}
-            />
-            <GmailHelpPanel />
+            {/* ここから下が実際のツール部分（LPの「はじめる」のスクロール先） */}
+            <div ref={toolRef} className="scroll-mt-16 space-y-4">
+              {/* 案内役リンクちゃんの一言（状態でセリフが変わる） */}
+              {hasActiveDuplicate ? (
+                <Mascot id="konta" expr="warn" tone="warn">
+                  すでに応募済みみたい！表参道は期間内1回のみのことが多いから、重複応募にならないよう気をつけてね。
+                </Mascot>
+              ) : latest?.status === "応募済み" ? (
+                <Mascot id="tanunee" expr="smile" tone="happy">
+                  応募おつかれさま！結果が来たら履歴のステータスを更新してね。
+                </Mascot>
+              ) : !latest ? (
+                <Mascot id="link" expr="smile">
+                  まずはGmailで予約メールを開いてURLを登録しよう。手順はこの下のカードから見られるよ。
+                </Mascot>
+              ) : (
+                <Mascot id="link" expr="normal">
+                  準備はこのカードから。コピー項目を用意しておくと入力がスムーズだよ。
+                </Mascot>
+              )}
+
+              <StoreCard
+                latest={latest}
+                hasActiveDuplicate={hasActiveDuplicate}
+                onOpenReservation={openReservation}
+                onShowSteps={() => setShowSteps(true)}
+                onShowCopy={() => setTab("copy")}
+                onMarkApplied={handleMarkApplied}
+                onEditLatest={() => latest && setEditing(latest)}
+                onAddNew={handleAddNew}
+              />
+              <GmailHelpPanel />
+            </div>
+
             {showSteps && (
               <div
                 className="fixed inset-0 z-50 flex items-end bg-black/40"
