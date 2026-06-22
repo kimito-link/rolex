@@ -1,54 +1,58 @@
 // 最小限のサービスワーカー。
-// アプリシェルをキャッシュし、オフラインでも起動できるようにする。
+// オフラインでも起動できるよう最後に成功したレスポンスを保持しつつ、
+// オンライン時は必ず最新を取りに行く「ネットワーク優先」方式にする。
+// （以前はキャッシュ優先で、更新が反映されない不具合があったため変更）
 // 個人情報はキャッシュしない（localStorageのみで扱う）。
 
-const CACHE = "rrh-v1";
+const CACHE = "rrh-v2";
 const APP_SHELL = ["/"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE).then((cache) => cache.addAll(APP_SHELL))
   );
+  // 新しいSWを待たせず即座に有効化する
   self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    )
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 self.addEventListener("fetch", (event) => {
   const { request } = event;
-  // GET のみ対象。ナビゲーションはネット優先＋オフライン時キャッシュ。
+  // GET 以外（POST等）はそのまま素通り
   if (request.method !== "GET") return;
+  // 同一オリジン以外（CDN等）は触らない
+  if (new URL(request.url).origin !== self.location.origin) return;
 
-  if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request).catch(() => caches.match("/").then((r) => r || Response.error()))
-    );
-    return;
-  }
-
-  // それ以外はキャッシュ優先、無ければネット取得して保存
+  // ネットワーク優先：取れたら最新を返しつつキャッシュ更新。
+  // オフライン等で失敗したらキャッシュにフォールバック。
   event.respondWith(
-    caches.match(request).then(
-      (cached) =>
-        cached ||
-        fetch(request).then((res) => {
-          // 同一オリジンの成功レスポンスのみキャッシュ
-          if (
-            res.ok &&
-            new URL(request.url).origin === self.location.origin
-          ) {
-            const copy = res.clone();
-            caches.open(CACHE).then((c) => c.put(request, copy));
-          }
-          return res;
-        })
-    )
+    fetch(request)
+      .then((res) => {
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(request, copy));
+        }
+        return res;
+      })
+      .catch(async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+        // ナビゲーションならトップのキャッシュで代替
+        if (request.mode === "navigate") {
+          const shell = await caches.match("/");
+          if (shell) return shell;
+        }
+        return Response.error();
+      })
   );
 });
